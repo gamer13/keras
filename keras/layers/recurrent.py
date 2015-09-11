@@ -86,9 +86,9 @@ class SimpleRNN(Recurrent):
 
         self.input = T.tensor3()
 
-        self.W = self.init((self.input_dim, self.output_dim))
-        self.U = self.inner_init((self.output_dim, self.output_dim))
-        self.b = shared_zeros((self.output_dim))
+        self.W = self.init((self.input_dim, self.output_dim), name='W')
+        self.U = self.inner_init((self.output_dim, self.output_dim), name='U')
+        self.b = shared_zeros((self.output_dim), name='b')
         self.params = [self.W, self.U, self.b]
 
         if weights is not None:

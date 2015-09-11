@@ -17,6 +17,7 @@ from six.moves import zip
 class Layer(object):
     def __init__(self):
         self.params = []
+        self.name = None
 
     def init_updates(self):
         self.updates = []
@@ -106,9 +107,23 @@ class Layer(object):
 
         return self.params, regularizers, consts, updates
 
-    def set_name(self, name):
-        for i in range(len(self.params)):
-            self.params[i].name = '%s_p%d' % (name, i)
+    def set_name(self, name=None):
+        if name is None:
+            name = self.__class__.__name__
+        if self.name is not None:
+            # if already set, we only need to replace the prefix
+            old_name_len = len(self.name)
+            for p in self.params:
+                p.name = name + p.name[old_name_len:]
+        else: # first time we same the layer name
+            self.name = name
+            # we set all parameter names
+            for i, p in enumerate(self.params):
+                if p is None:
+                    p.name = '%s_p%d' % (name, i)
+                else:
+                    p.name = '%s_%s' % (name, p.name)
+        return
 
 
 class MaskedLayer(Layer):
@@ -378,8 +393,8 @@ class Dense(Layer):
         self.output_dim = output_dim
 
         self.input = T.matrix()
-        self.W = self.init((self.input_dim, self.output_dim))
-        self.b = shared_zeros((self.output_dim))
+        self.W = self.init((self.input_dim, self.output_dim), name='W')
+        self.b = shared_zeros((self.output_dim), name='b')
 
         self.params = [self.W, self.b]
 
